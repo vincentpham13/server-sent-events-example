@@ -34,7 +34,7 @@ app.use('*', cors(corsOptionsDelegate));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 6000;
 
 app.get('/ping', (req, res) => {
   res.send("Pong");

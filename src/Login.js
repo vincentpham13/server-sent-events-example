@@ -47,7 +47,7 @@ class Login extends Component {
           <label htmlFor="deviceId">DeviceId:</label>
           <input id="deviceId" type="text" value={deviceId} onChange={this.onDeviceIdChange} />
           <br/>
-          <button onClick={this.onSubmit}>Login</button>
+          <button id="login" onClick={this.onSubmit}>Login</button>
         </div>
       </div>
     );
