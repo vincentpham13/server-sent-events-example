@@ -90,6 +90,10 @@ class Home extends Component {
       console.log(`${user} was verified.`);
     });
 
+    socket.on('imageDenied', (user) => {
+      console.log(`${user} was denied.`);
+    });
+
     // socket.on('loggedIn', (userId) => {
 
 
@@ -109,6 +113,10 @@ class Home extends Component {
       this.setState({
         users: userStatus
       });
+    });
+
+    socket.on('leftOnlineRoom', (userId) => {
+      // console.log(userId + 'just left online room');
     });
 
     socket.on('online', (userId) => {
@@ -132,6 +140,7 @@ class Home extends Component {
     });
 
     socket.on('syncedUsers', (users) => {
+      console.log(users);
       const userStatus = this.state.users.map(u => {
         let temp;
         for (let i = 0; i < users.length; i++) {
