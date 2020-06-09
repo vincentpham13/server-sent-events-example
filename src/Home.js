@@ -4,16 +4,15 @@ import { withRouter } from 'react-router-dom'
 import Axios from 'axios';
 import ioClient from 'socket.io-client';
 
-const baseUrl = 'https://api-staging.beopen.app/v1';
-const socketUrl = 'https://api-staging.beopen.app';
-// const baseUrl = 'http://localhost:4000/v1';
-// const socketUrl = 'http://localhost:4000';
+// const baseUrl = 'https://api-staging.beopen.app/v1';
+// const socketUrl = 'https://api-staging.beopen.app';
+const baseUrl = 'http://localhost:4000/v1';
+const socketUrl = 'http://localhost:4000';
 
 const axios = Axios.create();
 axios.defaults.baseURL = baseUrl;
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-const baseSocketUrl = 'http://localhost';
 
 const options = {
   reconnection: true,
@@ -86,6 +85,10 @@ class Home extends Component {
       console.log(`${userId} liked me`);
     });
 
+    socket.on('unliked', (userId) => {
+      console.log(`${userId} unliked me`);
+    });
+
     socket.on('imageVerified', (user) => {
       console.log(`${user} was verified.`);
     });
@@ -93,6 +96,11 @@ class Home extends Component {
     socket.on('imageDenied', (user) => {
       console.log(`${user} was denied.`);
     });
+
+    socket.on('receiveInvite', (invite) => {
+      console.log(`received: ${JSON.stringify(invite)}.`);
+    });
+
 
     // socket.on('loggedIn', (userId) => {
 
@@ -139,8 +147,8 @@ class Home extends Component {
       console.log('matched', data);
     });
 
-    socket.on('syncedUsers', (users) => {
-      console.log(users);
+    socket.on('syncedDaily', (users) => {
+      console.log('syncedDaily', users);
       const userStatus = this.state.users.map(u => {
         let temp;
         for (let i = 0; i < users.length; i++) {
@@ -158,13 +166,18 @@ class Home extends Component {
         users: userStatus
       });
     });
+    socket.on('syncedOnlineRoom', (users) => {
+      console.log('syncedOnlineRoom', users);
+      console.log(users);
+    });
 
   }
 
   syncUser = (users) => {
     const userArr = users.map((u) => u.id);
     socket.emit('joinRooms', userArr);
-    socket.emit('syncStatus', userArr);
+    socket.emit('syncDaily', userArr);
+    socket.emit('syncOnlineRoom', userArr);
   }
 
   refresh = () => {
