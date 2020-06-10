@@ -101,6 +101,10 @@ class Home extends Component {
       console.log(`received: ${JSON.stringify(invite)}.`);
     });
 
+    socket.on('respondInvite', (invite) => {
+      console.log(`responded: ${JSON.stringify(invite)}.`);
+    });
+
 
     // socket.on('loggedIn', (userId) => {
 
