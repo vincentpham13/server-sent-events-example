@@ -4,8 +4,8 @@ import { withRouter } from 'react-router-dom'
 import Axios from 'axios';
 import ioClient from 'socket.io-client';
 
-// const baseUrl = 'https://api-staging.beopen.app/v1';
-// const socketUrl = 'https://api-staging.beopen.app';
+//const baseUrl = 'https://api-staging.beopen.app/v1';
+//const socketUrl = 'https://api-staging.beopen.app';
 const baseUrl = 'http://localhost:4000/v1';
 const socketUrl = 'http://localhost:4000';
 
@@ -50,7 +50,6 @@ class Home extends Component {
     socket.connect();
 
     window.onbeforeunload = function () {
-      console.log('test disconnect')
       socket.disconnect();
     }.bind(this);
 
@@ -63,7 +62,7 @@ class Home extends Component {
       const { users } = this.state;
       this.syncUser(users);
       socket.emit('joinOnlineRoom');
-      console.log('authenticated and synced users', user);
+      socket.emit('syncAllInvitations');
     });
 
     socket.on('unauthorized', (reason) => {
@@ -77,12 +76,8 @@ class Home extends Component {
       // this.props.history.push('/');
     });
 
-    socket.on('matched', (data) => {
-      console.log(`It's matched: ${data}`);
-    });
-
-    socket.on('likedMe', (userId) => {
-      console.log(`${userId} liked me`);
+    socket.on('likedMe', (user) => {
+      console.log(`${JSON.stringify(user)} liked me`);
     });
 
     socket.on('unliked', (userId) => {
@@ -105,11 +100,16 @@ class Home extends Component {
       console.log(`responded: ${JSON.stringify(invite)}.`);
     });
 
+    socket.on('cancelInvite', (invite) => {
+      console.log(`called: ${JSON.stringify(invite)}.`);
+    });
 
-    // socket.on('loggedIn', (userId) => {
-
-
-    // });
+    socket.on('readyForCall', (invite) => {
+      console.log(`readyForCall: ${JSON.stringify(invite)}`)
+    })
+    socket.on('startCall', (invite) => {
+      console.log(`startCall: ${JSON.stringify(invite)}`)
+    })
 
     socket.on('offline', (userId) => {
       console.log(userId + 'just offline');
@@ -148,7 +148,7 @@ class Home extends Component {
     });
 
     socket.on('matched', (data) => {
-      console.log('matched', data);
+      console.log('matched', JSON.stringify(data));
     });
 
     socket.on('syncedDaily', (users) => {
@@ -172,7 +172,10 @@ class Home extends Component {
     });
     socket.on('syncedOnlineRoom', (users) => {
       console.log('syncedOnlineRoom', users);
-      console.log(users);
+    });
+
+    socket.on('syncedAllInvitations', (data) => {
+      console.log('syncedAllInvitations', data);
     });
 
   }
@@ -187,8 +190,6 @@ class Home extends Component {
   refresh = () => {
     Axios.get(`${baseUrl}` + `/users/daily-suggestions`)
       .then((res) => {
-
-        console.log(res.data);
         const userStatus = res.data.map(u => ({ ...u, status: 'offline' }));
 
         this.setState({
