@@ -4,8 +4,8 @@ import { withRouter } from 'react-router-dom'
 import Axios from 'axios';
 import ioClient from 'socket.io-client';
 
-//const baseUrl = 'https://api-staging.beopen.app/v1';
-//const socketUrl = 'https://api-staging.beopen.app';
+// const baseUrl = 'https://api-staging.beopen.app/v1';
+// const socketUrl = 'https://api-staging.beopen.app';
 const baseUrl = 'http://localhost:4000/v1';
 const socketUrl = 'http://localhost:4000';
 
@@ -24,7 +24,7 @@ const options = {
   requestTimeout: 4000,
   autoConnect: true
 }
-let socket;
+let socket, currentUser;
 
 class Home extends Component {
 
@@ -33,6 +33,38 @@ class Home extends Component {
 
     this.state = {
       users: [],
+      typingText: '',
+      partnerId: '',
+      conversation: [
+        // {
+        //   // id: 1,
+        //   content: 'Hi',
+        //   invitationId: 1,
+        //   conversationId: 1,
+        //   from: 'fc336925-33a6-435b-b6d2-952d7d01d0c9',
+        //   to: '797adac8-7522-4101-b7b1-610fe8724923',
+        //   metadata: {
+        //     user: {
+        //       _id: '797adac8-7522-4101-b7b1-610fe8724923',
+        //       name: 'Foo'
+        //     }
+        //   }
+        // },
+        // {
+        //   // id: 2,
+        //   content: 'Hello',
+        //   invitationId: 1,
+        //   conversationId: 1,
+        //   from: 'fc336925-33a6-435b-b6d2-952d7d01d0c9',
+        //   to: '797adac8-7522-4101-b7b1-610fe8724923',
+        //   metadata: {
+        //     user: {
+        //       _id: '797adac8-7522-4101-b7b1-610fe8724923',
+        //       name: 'Bar'
+        //     }
+        //   }
+        // },
+      ]
     }
   }
 
@@ -59,10 +91,12 @@ class Home extends Component {
     });
 
     socket.on('authenticated', (user) => {
+      currentUser = user;
       const { users } = this.state;
       this.syncUser(users);
       socket.emit('joinOnlineRoom');
       socket.emit('syncAllInvitations');
+      socket.emit('syncHistoricalMessages', 1);
     });
 
     socket.on('unauthorized', (reason) => {
@@ -109,6 +143,10 @@ class Home extends Component {
     })
     socket.on('startCall', (invite) => {
       console.log(`startCall: ${JSON.stringify(invite)}`)
+    })
+
+    socket.on('receiveTimeslots', (timeslots) => {
+      console.log(`receiveTimeslots: ${JSON.stringify(timeslots)}`)
     })
 
     socket.on('offline', (userId) => {
@@ -178,6 +216,24 @@ class Home extends Component {
       console.log('syncedAllInvitations', data);
     });
 
+    socket.on('updateRemainingInvitations', (remaining) => {
+      console.log('updateRemainingInvitations', remaining);
+    });
+
+    socket.on('syncedHistoricalMessages', (historicaMsgs) => {
+      console.log('syncedHistoricalMessages', historicaMsgs);
+      this.setState({ conversation: historicaMsgs })
+    });
+
+    socket.on('onMessage', (message) => {
+      console.log('onMessage', message);
+      const { conversation } = this.state;
+      const msg = JSON.parse(message);
+      if (msg.to === currentUser.id) {
+        conversation.push(msg)
+        this.setState({ conversation: conversation })
+      }
+    });
   }
 
   syncUser = (users) => {
@@ -199,6 +255,46 @@ class Home extends Component {
         this.syncUser(res.data);
       })
       .catch((error) => console.log(error));
+  }
+
+  onPartnerIdChange = (e) => {
+    const id = e.target.value;
+    this.setState({
+      partnerId: id
+    })
+  }
+
+  onTyping = (e) => {
+    const text = e.target.value;
+    this.setState({
+      typingText: text
+    })
+  }
+
+  onKeyPress = (e) => {
+    const { typingText, conversation, partnerId } = this.state;
+    if (e.key === 'Enter') {
+      // const latestMsg = conversation[conversation.length - 1];
+      const msg = {
+        // id: latestMsg.id + 1,
+        type: 'text',
+        content: typingText,
+        invitationId: 1,
+        conversationId: 1,
+        from: currentUser.id,
+        to: partnerId,
+        metadata: {
+          user: {
+            _id: currentUser.id,
+            name: 'Foo'
+          }
+        }
+      };
+
+      socket.emit('sendMessage', msg);
+      conversation.push(msg);
+      this.setState({ typingText: '', conversation: conversation });
+    }
   }
 
   renderUser = (users) => (<div>
@@ -251,7 +347,7 @@ class Home extends Component {
   };
 
   render() {
-    const { users } = this.state;
+    const { users, typingText, partnerId } = this.state;
 
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -264,6 +360,17 @@ class Home extends Component {
           {
             users.length && this.renderUser(users)
           }
+
+          <h1>Chat conversation</h1>
+          <ul>
+            {
+              this.state.conversation.map(msg => (<li key={msg.id}>{msg.metadata.user.name} sent: {msg.content}</li>))
+            }
+          </ul>
+          <label htmlFor="partnerId">Chat with userId:</label>
+          <input id="partnerId" type="text" value={partnerId} onChange={this.onPartnerIdChange} />
+          <label htmlFor="typingText">Type:</label>
+          <input id="typingText" type="text" value={typingText} onKeyPress={this.onKeyPress} onChange={this.onTyping} />
         </div>
       </div>
     );
