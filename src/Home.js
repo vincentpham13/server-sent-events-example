@@ -4,10 +4,10 @@ import { withRouter } from 'react-router-dom'
 import Axios from 'axios';
 import ioClient from 'socket.io-client';
 
-// const baseUrl = 'https://api-staging.beopen.app/v1';
-// const socketUrl = 'https://api-staging.beopen.app';
-const baseUrl = 'http://localhost:4000/v1';
-const socketUrl = 'http://localhost:4000';
+const baseUrl = 'https://api-staging.beopen.app/v1';
+const socketUrl = 'https://api-staging.beopen.app';
+// const baseUrl = 'http://localhost:4000/v1';
+// const socketUrl = 'http://localhost:4000';
 
 const axios = Axios.create();
 axios.defaults.baseURL = baseUrl;
@@ -225,14 +225,18 @@ class Home extends Component {
       this.setState({ conversation: historicaMsgs })
     });
 
-    socket.on('onMessage', (message) => {
-      console.log('onMessage', message);
+    socket.on('receiveMessage', (message) => {
+      console.log('receiveMessage', message);
       const { conversation } = this.state;
-      const msg = JSON.parse(message);
+      const msg = message;
       if (msg.to === currentUser.id) {
         conversation.push(msg)
         this.setState({ conversation: conversation })
       }
+    });
+
+    socket.on('sendMessageFailed', (error) => {
+      console.log('sendMessageFailed', error);
     });
   }
 
@@ -283,15 +287,16 @@ class Home extends Component {
         conversationId: 1,
         from: currentUser.id,
         to: partnerId,
-        metadata: {
-          user: {
-            _id: currentUser.id,
-            name: 'Foo'
-          }
-        }
+        // metadata: {
+        //   user: {
+        //     _id: currentUser.id,
+        //     name: 'Foo'
+        //   }
+        // }
       };
 
       socket.emit('sendMessage', msg);
+      console.log("Home -> onKeyPress -> msg", msg)
       conversation.push(msg);
       this.setState({ typingText: '', conversation: conversation });
     }
@@ -346,6 +351,68 @@ class Home extends Component {
     // this.props.history.push('/');
   };
 
+  proposeTimeslots = () => {
+    const { partnerId } = this.state;
+    const proposeTimeslots = {
+      timezone: 'GMT+7',
+      timeslots: [
+        {
+          day: '2020-07-20',
+          time: 19
+        },
+        {
+          day: '2020-07-21',
+          time: 19.5
+        },
+        {
+          day: '2020-07-22',
+          time: 8
+        }
+      ]
+    };
+
+    const msg = {
+      type: 'schedule',
+      content: proposeTimeslots,
+      invitationId: 1,
+      from: currentUser.id,
+      to: partnerId,
+      metadata: {
+        scheduleType: 'schedule-proposal'
+      }
+    };
+    console.log("Home -> proposeTimeslots -> msg", msg)
+
+    socket.emit('sendMessage', msg);
+    // conversation.push(msg);
+    // this.setState({ conversation: conversation });
+  };
+
+  pickTimeslots = () => {
+    const { partnerId } = this.state;
+    const pickedTimeslot =
+    {
+      timeslot: {
+        day: '2020-07-20',
+        time: 19,
+        timezone: 'GMT+7'
+      }
+    }
+
+    const msg = {
+      type: 'schedule',
+      content: pickedTimeslot,
+      invitationId: 1,
+      from: currentUser.id,
+      to: partnerId,
+      metadata: {
+        scheduleType: 'schedule-selection'
+      }
+    };
+
+    socket.emit('sendMessage', msg);
+  };
+
   render() {
     const { users, typingText, partnerId } = this.state;
 
@@ -357,6 +424,8 @@ class Home extends Component {
           <button onClick={this.disconnect}>Logout</button>
           <button onClick={this.leaveOnlineRoom}>Leave Online Room</button>
           <button onClick={this.joinOnlineRoom}>Join Online Room</button>
+          <button onClick={this.proposeTimeslots}>Propose timeslots</button>
+          <button onClick={this.pickTimeslots}>Pick timeslot</button>
           {
             users.length && this.renderUser(users)
           }
@@ -364,7 +433,7 @@ class Home extends Component {
           <h1>Chat conversation</h1>
           <ul>
             {
-              this.state.conversation.map(msg => (<li key={msg.id}>{msg.metadata.user.name} sent: {msg.content}</li>))
+              // this.state.conversation.map(msg => (<li key={msg.id}>{msg.metadata && msg.metadata.user && msg.metadata.user.name} sent: {msg.content || msg.metadata.type}</li>))
             }
           </ul>
           <label htmlFor="partnerId">Chat with userId:</label>
