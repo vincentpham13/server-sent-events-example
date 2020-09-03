@@ -39,13 +39,13 @@ class Home extends Component {
         // {
         //   // id: 1,
         //   content: 'Hi',
-        //   invitationId: 8,
-        //   conversationId: 8,
+        //   invitationId: 158,
+        //   conversationId: 158,
         //   from: 'fc336925-33a6-435b-b6d2-952d7d01d0c9',
-        //   to: '797adac8-7522-4101-b7b1-610fe8724923',
+        //   to: '797adac158-7522-4101-b7b1-610fe158724923',
         //   metadata: {
         //     user: {
-        //       _id: '797adac8-7522-4101-b7b1-610fe8724923',
+        //       _id: '797adac158-7522-4101-b7b1-610fe158724923',
         //       name: 'Foo'
         //     }
         //   }
@@ -53,13 +53,13 @@ class Home extends Component {
         // {
         //   // id: 2,
         //   content: 'Hello',
-        //   invitationId: 8,
-        //   conversationId: 8,
+        //   invitationId: 158,
+        //   conversationId: 158,
         //   from: 'fc336925-33a6-435b-b6d2-952d7d01d0c9',
-        //   to: '797adac8-7522-4101-b7b1-610fe8724923',
+        //   to: '797adac158-7522-4101-b7b1-610fe158724923',
         //   metadata: {
         //     user: {
-        //       _id: '797adac8-7522-4101-b7b1-610fe8724923',
+        //       _id: '797adac158-7522-4101-b7b1-610fe158724923',
         //       name: 'Bar'
         //     }
         //   }
@@ -93,10 +93,10 @@ class Home extends Component {
     socket.on('authenticated', (user) => {
       currentUser = user;
       const { users } = this.state;
-      this.syncUser(users);
       socket.emit('joinOnlineRoom');
-      socket.emit('syncAllInvitations');
-      socket.emit('syncHistoricalMessages', 8);
+      this.syncUser(users);
+      // socket.emit('syncAllInvitations');
+      // socket.emit('syncHistoricalMessages', 158);
     });
 
     socket.on('unauthorized', (reason) => {
@@ -128,6 +128,9 @@ class Home extends Component {
 
     socket.on('receiveInvite', (invite) => {
       console.log(`received: ${JSON.stringify(invite)}.`);
+      socket.emit('syncUsersStatus', [
+        '8e531ac2-1d66-4415-bfac-11cf85bca311'
+      ]);
     });
 
     socket.on('respondInvite', (invite) => {
@@ -189,8 +192,8 @@ class Home extends Component {
       console.log('matched', JSON.stringify(data));
     });
 
-    socket.on('syncedDaily', (users) => {
-      console.log('syncedDaily', users);
+    socket.on('syncedUsersStatus', (users) => {
+      console.log('syncedUsersStatus', users);
       const userStatus = this.state.users.map(u => {
         let temp;
         for (let i = 0; i < users.length; i++) {
@@ -245,12 +248,30 @@ class Home extends Component {
     socket.on('readyForScheduledCall', (data) => {
       console.log('readyForScheduledCall', data);
     });
+    socket.on('refreshRemainingInvitations', (data) => {
+      console.log('refreshDailySuggestion', data);
+    });
+    socket.on('refreshRemainingInvitations', (data) => {
+      console.log('refreshRemainingInvitations', data);
+    });
+
+    socket.on('changeInvitationVisibility', (data) => {
+      console.log('changeInvitationVisibility', data);
+    });
+
+    socket.on('refreshLikeListProfiles', (data) => {
+      console.log('refreshLikeListProfiles', data);
+    });
+
+    socket.on('readyForAnotherCall', (data) => {
+      console.log('readyForAnotherCall', data);
+    });
   }
 
   syncUser = (users) => {
     const userArr = users.map((u) => u.id);
-    socket.emit('joinRooms', userArr);
-    socket.emit('syncDaily', userArr);
+    socket.emit('joinUsersRoom', userArr);
+    socket.emit('syncUsersStatus', userArr);
     socket.emit('syncOnlineRoom', userArr);
   }
 
@@ -290,8 +311,8 @@ class Home extends Component {
         // id: latestMsg.id + 1,
         type: 'text',
         content: typingText,
-        invitationId: 8,
-        conversationId: 8,
+        invitationId: 158,
+        conversationId: 158,
         from: currentUser.id,
         to: partnerId,
         // metadata: {
@@ -364,7 +385,7 @@ class Home extends Component {
       timezone: 'GMT+7',
       timeslots: [
         {
-          day: '2020-07-28',
+          day: '2020-08-21',
           time: 22
         }
       ]
@@ -373,7 +394,7 @@ class Home extends Component {
     const msg = {
       type: 'schedule',
       content: proposeTimeslots,
-      invitationId: 8,
+      invitationId: 158,
       from: currentUser.id,
       to: partnerId,
       metadata: {
@@ -392,7 +413,7 @@ class Home extends Component {
     const pickedTimeslot =
     {
       timeslot: {
-        day: '2020-07-28',
+        day: '2020-08-21',
         time: 22,
         timezone: 'GMT+7'
       }
@@ -401,7 +422,7 @@ class Home extends Component {
     const msg = {
       type: 'schedule',
       content: pickedTimeslot,
-      invitationId: 8,
+      invitationId: 158,
       from: currentUser.id,
       to: partnerId,
       metadata: {

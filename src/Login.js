@@ -7,8 +7,8 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiODJiOTdmMTQtNDFlOS00YmY0LWEzNTMtNjM5MWRhYjg4Y2Q0IiwiZW1haWwiOiJuaGF0cGhtQGRncm91cC5jbyIsImZ1bGxOYW1lIjoiWW91bmcgUGlsb3QiLCJiaXJ0aGRheSI6IjIwMDYtMDYtMTVUMTc6MDA6MDAuMDAwWiIsImdlbmRlcklkIjoxLCJwaG9uZSI6Iis1NCAzODggODUxIDMzMzIiLCJzb2NpYWxJZCI6IjIzNDIzMjE0MTIzMTI0MjQxNDEiLCJtZXRob2QiOiJhcHBsZSIsImlzUHJlbWl1bSI6ZmFsc2UsIm1ldGFkYXRhIjp7InBlbmRpbmdTdGVwIjpudWxsLCJpc1Byb2ZpbGVDb21wbGV0ZWQiOnRydWV9fSwiZGV2aWNlSWQiOiJkMjIyZWUiLCJpYXQiOjE1Nzg5MTE4NTQsImV4cCI6MTU3ODk5ODI1NH0.qdwUgqeLAE0CHlWx3U5lpWEWdpakLu7joF_4FDRkNL0',
-      deviceId: 'd1',
+      token: '',
+      deviceId: 'iPhone12Pro',
     }
   }
 
