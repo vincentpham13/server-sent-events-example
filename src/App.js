@@ -11,10 +11,10 @@ const App = () => (
   <Router history={history}>
     <Switch>
       <Route exact path="/">
-        <Login />
+        <Home />
       </Route>
       <Route path="/home">
-        <Home />
+        <Login />
       </Route>
     </Switch>
   </Router>

@@ -1,25 +1,15 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { withRouter } from 'react-router-dom'
 
-import './App.css';
+const Login = () => {
 
-class Login extends Component {
-
-  constructor(props) {
-    super(props);
-  }
-
-  componentDidMount() {
-
-  }
-
-  render() {
-    return (
-      <div className="App">
-        <h1>Login</h1>
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <div>
+        <h1>Now Login</h1>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default withRouter(Login);
