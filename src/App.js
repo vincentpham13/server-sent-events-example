@@ -1,6 +1,5 @@
 import React from 'react';
 import { Switch, Route, Router } from 'react-router-dom'
-import './App.css';
 
 import Login from './Login';
 import Home from './Home';
@@ -13,7 +12,7 @@ const App = () => (
       <Route exact path="/">
         <Home />
       </Route>
-      <Route path="/home">
+      <Route path="/login">
         <Login />
       </Route>
     </Switch>

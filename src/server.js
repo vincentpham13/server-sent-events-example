@@ -7,23 +7,43 @@ const app = express();
 
 
 const whitelist = ['http://localhost:3000']
-const corsOptionsDelegate = function (req, callback) {
-  let corsOptions;
-  if (whitelist.indexOf(req.header('Origin')) !== -1) {
-    corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
-  } else {
-    corsOptions = { origin: false } // disable CORS for this request
-  }
-  callback(null, corsOptions) // callback expects two parameters: error and options
+const corsOptions = {
+  origin: whitelist,
+  optionsSuccessStatus: 200
 }
 
-app.use('*', cors(corsOptionsDelegate));
+app.use('*', cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 
 app.get('/ping', (req, res) => {
   res.send("Pong");
+});
+
+app.get('/stream-random-number', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Allow-Control-Allow-Credentials', true);
+
+  res.flushHeaders();
+  const interval = setInterval(() => {
+    const randomNumber = Math.floor(Math.random() * 1000);
+    const message = {
+      id: new Date().getTime(),
+      number: randomNumber,
+    };
+
+    const response = `event: random_number\ndata: ${JSON.stringify(message)}\n\n`;
+    res.write(response);
+  }, 1000);
+
+  res.on('close', () => {
+    clearInterval(interval);
+
+    res.end();
+  });
 });
 
 app.listen(PORT, () => {
